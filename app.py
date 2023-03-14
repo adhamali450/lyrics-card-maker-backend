@@ -10,6 +10,16 @@ genius = Genius(
     'TD-NdGeW-I0TRk-uEOkIp6sOAU9TPuxXIPMpRRu7uvWywUZCdeYvtYreG_Pz6f6u', timeout=10)
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify("404 not found. Please refer to the docs (no docs yet but in the future)"), 404
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return 'Live and working ✅'
+
+
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('query')
@@ -48,10 +58,11 @@ def search():
 
 @app.route('/api/song/<song_id>', methods=['GET'])
 def get_lyrics(song_id):
-    lyrics = genius.lyrics(song_id)
+    if isinstance(song_id, int):
+        return jsonify('Please enter a valid song ID'), 400
 
-    response = jsonify(lyrics)
-    return response
+    response = jsonify(genius.lyrics(song_id))
+    return response, 200
 
 
 if __name__ == '__main__':
