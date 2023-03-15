@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from lyricsgenius import Genius
+from utils import add_stats, get_dominant_colors
 
 app = Flask(__name__)
 CORS(app)
@@ -8,6 +9,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 genius = Genius(
     'TD-NdGeW-I0TRk-uEOkIp6sOAU9TPuxXIPMpRRu7uvWywUZCdeYvtYreG_Pz6f6u', timeout=10)
+genius.remove_section_headers = True
 
 
 @app.errorhandler(404)
@@ -23,16 +25,15 @@ def index():
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('query')
+    max = request.args.get('max') or 5
 
     raw_results = genius.search_songs(query)['hits']
 
     if raw_results:
-        raw_results = raw_results[:5] if len(raw_results) >= 5 else raw_results
+        raw_results = raw_results[:max] if len(
+            raw_results) >= max else raw_results
 
-        # Not to get KeyError when there are no stats
-        for i in range(len(raw_results)):
-            if not raw_results[i]['result']['stats'].get('pageviews'):
-                raw_results[i]['result']['stats'].update({'pageviews': 0})
+        add_stats(raw_results)
 
         results = []
         for result in raw_results:
@@ -41,7 +42,7 @@ def search():
                 'title': result['result']['title'],
                 'artist': result['result']['primary_artist']['name'],
                 'image': result['result']['header_image_thumbnail_url'],
-                'popularity': result['result']['stats']['pageviews']
+                'popularity': result['result']['stats']['pageviews'],
             })
 
         sorted_results = sorted(
@@ -56,12 +57,31 @@ def search():
     return response
 
 
-@app.route('/api/song/<song_id>', methods=['GET'])
+@app.route('/api/song/lyrics/<song_id>', methods=['GET'])
 def get_lyrics(song_id):
     if isinstance(song_id, int):
         return jsonify('Please enter a valid song ID'), 400
 
     response = jsonify(genius.lyrics(song_id))
+    return response, 200
+
+
+@app.route('/api/song/colors', methods=['GET'])
+def get_colors():
+    url = request.args.get('url')
+
+    if not url:
+        return jsonify('Please enter a valid song url'), 400
+
+    colors = get_dominant_colors(url)
+
+    response = jsonify(
+        {
+            'background_color': f'rgb({colors[0][0]}, {colors[0][1]}, {colors[0][2]})',
+            'text_color': f'rgb({colors[1][0]}, {colors[1][1]}, {colors[1][2]})'
+        }
+    )
+
     return response, 200
 
 
