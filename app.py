@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from lyricsgenius import Genius
-from utils import add_stats, get_dominant_colors
+from utils import add_stats
+from colors import dominant_colors, proper_foreground_color
 
 app = Flask(__name__)
 CORS(app)
@@ -52,7 +53,7 @@ def search():
 
     else:
         # json saying no results
-        resposne = jsonify([])
+        response = jsonify([])
 
     return response
 
@@ -73,12 +74,12 @@ def get_colors():
     if not url:
         return jsonify('Please enter a valid song url'), 400
 
-    colors = get_dominant_colors(url)
+    colors = dominant_colors(url)
 
     response = jsonify(
         {
-            'background_color': f'rgb({colors[0][0]}, {colors[0][1]}, {colors[0][2]})',
-            'text_color': f'rgb({colors[1][0]}, {colors[1][1]}, {colors[1][2]})'
+            'background_color': colors[0],
+            'text_color': colors[1]
         }
     )
 
