@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from lyricsgenius import Genius
-from utils import add_stats
-from colors import dominant_colors, proper_foreground_color
+from utils import add_stats, img_to_base64
+from colors import dominant_colors
+import requests
+
 
 app = Flask(__name__)
 CORS(app)
@@ -64,6 +66,22 @@ def get_lyrics(song_id):
         return jsonify('Please enter a valid song ID'), 400
 
     response = jsonify(genius.lyrics(song_id))
+    return response, 200
+
+
+@app.route('/api/cors', methods=['GET'])
+def get_cors_image():
+    url = request.args.get('url')
+
+    if not isinstance(url, str):
+        return jsonify('Please enter a valid image URL'), 400
+
+    response = requests.get(url)
+    if response.status_code != 200:
+        return jsonify('Failed to get image'), 400
+
+    response = jsonify(img_to_base64(response.content))
+
     return response, 200
 
 
