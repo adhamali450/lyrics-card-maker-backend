@@ -33,6 +33,8 @@ def img_to_base64(res_img: bytes) -> str:
 
     image = Image.open(io.BytesIO(res_img))
 
+    image = image.convert('RGB')
+
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
