@@ -4,7 +4,9 @@ from lyricsgenius import Genius
 from utils import add_stats, img_to_base64
 from colors import dominant_colors
 import requests
-
+from urllib.parse import unquote
+import os
+os.system('cls' if os.name == 'nt' else 'clear')
 
 app = Flask(__name__)
 CORS(app)
@@ -72,11 +74,13 @@ def get_lyrics(song_id):
 @app.route('/api/cors', methods=['GET'])
 def get_cors_image():
     url = request.args.get('url')
+    url = unquote(url)
 
     if not isinstance(url, str):
         return jsonify('Please enter a valid image URL'), 400
 
     response = requests.get(url)
+    print(response)
     if response.status_code != 200:
         return jsonify('Failed to get image'), 400
 
