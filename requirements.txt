@@ -1,6 +1,8 @@
 colorthief==0.2.1
-Flask==2.2.3
+dropbox==11.36.0
+Flask==2.3.2
 flask_cors==3.0.10
 lyricsgenius==3.0.1
-Pillow==9.4.0
+Pillow==9.5.0
+python-dotenv==1.0.0
 requests==2.28.1

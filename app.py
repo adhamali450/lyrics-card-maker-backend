@@ -1,20 +1,32 @@
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from lyricsgenius import Genius
 from utils import add_stats, img_to_base64
 from colors import dominant_colors
 import requests
 from urllib.parse import unquote
+import base64
+from dropbox import Dropbox
+from dotenv import load_dotenv
 import os
 os.system('cls' if os.name == 'nt' else 'clear')
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 genius = Genius(
-    'TD-NdGeW-I0TRk-uEOkIp6sOAU9TPuxXIPMpRRu7uvWywUZCdeYvtYreG_Pz6f6u', timeout=10)
+    os.getenv('genius_key'), timeout=10)
 genius.remove_section_headers = True
+
+# Dropbox
+app_key = os.getenv('app_key')
+app_secret = os.getenv('app_secret')
+access_token = os.getenv('access_token')
+refresh_token = os.getenv('refresh_token')
+access_code = os.getenv('access_code')
 
 
 @app.errorhandler(404)
@@ -105,6 +117,65 @@ def get_colors():
         }
     )
 
+    return response, 200
+
+
+# TODO: Refactor code base
+
+def get_refreash_token():
+
+    # https://www.codemzy.com/blog/dropbox-long-lived-access-refresh-token
+    # https://www.dropbox.com/oauth2/authorize?client_id=<APP_KEY>&token_access_type=offline&response_type=code
+
+    # Create the headers
+    headers = {
+        "Authorization": "Basic " + base64.b64encode(f"{app_key}:{app_secret}".encode()).decode(),
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    # Create the request body
+    data = {
+        "code": access_code,
+        "grant_type": "authorization_code"
+    }
+
+    # Make the POST request
+    response = requests.post(
+        "https://api.dropboxapi.com/oauth2/token", headers=headers, data=data)
+
+    # Print the response
+    print("refresh_token:", response.json().get('refresh_token'))
+    print(response.text)
+
+
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    file = request.files['image']
+    filename = file.filename
+
+    dbx = Dropbox(
+        oauth2_access_token=access_token,
+        oauth2_refresh_token=refresh_token,
+        app_key=app_key,
+        app_secret=app_secret
+    )
+    dbx.check_and_refresh_access_token()
+
+    print(dbx.users_get_current_account())
+
+    # Upload the image to Dropbox
+    dbx.files_upload(file.read(), f'/{filename}')
+
+    # Get the direct link to the uploaded image
+    link = dbx.sharing_create_shared_link(f'/{filename}')
+    direct_link = link.url.replace(
+        'www.dropbox.com', 'dl.dropboxusercontent.com')
+
+    response = jsonify(
+        {
+            'url': direct_link,
+        }
+    )
     return response, 200
 
 
