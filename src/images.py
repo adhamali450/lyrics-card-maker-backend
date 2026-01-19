@@ -2,20 +2,6 @@ import io
 from PIL import Image
 import base64
 
-
-def add_stats(hits: list) -> None:
-    """
-    Add stats to the results so that we don't get KeyError when there are no stats
-
-    Parameters:
-        hits (list): The list of results from the Genius API
-    """
-
-    for i in range(len(hits)):
-        if not hits[i]['result']['stats'].get('pageviews'):
-            hits[i]['result']['stats'].update({'pageviews': 0})
-
-
 def img_to_base64(res_img: bytes) -> str:
     """
     Converts a response image to a base64-encoded string.

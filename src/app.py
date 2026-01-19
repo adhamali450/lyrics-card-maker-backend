@@ -1,14 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from lyricsgenius import Genius
-from .utils import add_stats, img_to_base64
+from .images import img_to_base64
 from .colors import dominant_colors
+from .lyrics import get_lyrics_by_id
 import requests
 from urllib.parse import unquote
 from dotenv import load_dotenv
 import os
-
-# os.system("cls" if os.name == "nt" else "clear")
 
 load_dotenv()
 
@@ -20,10 +19,10 @@ genius = Genius(access_token=os.getenv("genius_key"), timeout=10, verbose=True, 
 genius._session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found():
     return (
         jsonify(
-            "404 not found. Please refer to the docs (no docs yet but in the future)"
+            "404 not found"
         ),
         404,
     )
@@ -44,8 +43,6 @@ def search():
     if raw_results:
         raw_results = raw_results[:max] if len(raw_results) >= max else raw_results
 
-        add_stats(raw_results)
-
         results = []
         for result in raw_results:
             results.append(
@@ -54,7 +51,7 @@ def search():
                     "title": result["result"]["title"],
                     "artist": result["result"]["primary_artist"]["name"],
                     "image": result["result"]["header_image_thumbnail_url"],
-                    "popularity": result["result"]["stats"]["pageviews"],
+                    "popularity": result["result"]["stats"].get('pageviews', 0),
                 }
             )
 
@@ -70,12 +67,8 @@ def search():
 
 @app.route("/api/song/lyrics/<song_id>", methods=["GET"])
 def get_lyrics(song_id):
-    # if not isinstance(song_id, int) or not isinstance(song_id, str):    
-    #     return jsonify("Please enter a valid song ID"), 400
-
     try:
-        lyrics = genius.lyrics(song_url=f'https://genius.com/songs/{song_id}')
-    
+        lyrics = get_lyrics_by_id(song_id)
         if not lyrics:
             return jsonify("Failed to get lyrics"), 400 
             

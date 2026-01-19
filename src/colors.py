@@ -2,7 +2,7 @@ from urllib.request import urlopen, Request
 from io import BytesIO
 from colorthief import ColorThief
 from PIL import Image, ImageColor
-from colorsys import rgb_to_hls, hls_to_rgb
+from colorsys import rgb_to_hls
 
 
 def hex_to_rgb(hex: str) -> tuple:
