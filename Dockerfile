@@ -24,5 +24,5 @@ RUN pip install --no-cache-dir gunicorn
 COPY . .
 
 # Cloud Run uses the PORT environment variable. 
-# We bind Gunicorn to 0.0.0.0 and port 5000.
-CMD exec gunicorn --bind :5000 --workers 1 --threads 8 --timeout 0 main:app
+# We bind Gunicorn to 0.0.0.0 and the dynamic $PORT.
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
