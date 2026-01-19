@@ -17,6 +17,7 @@ CORS(app)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 genius = Genius(access_token=os.getenv("genius_key"), timeout=10, verbose=True, remove_section_headers=True, retries=2)
+genius._session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
 
 @app.errorhandler(404)
 def page_not_found(e):
