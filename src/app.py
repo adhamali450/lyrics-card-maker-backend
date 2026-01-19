@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from lyricsgenius import Genius
-from utils import add_stats, img_to_base64
-from colors import dominant_colors
+from .utils import add_stats, img_to_base64
+from .colors import dominant_colors
 import requests
 from urllib.parse import unquote
 from dotenv import load_dotenv
@@ -108,8 +108,3 @@ def get_colors():
     response = jsonify({"background_color": colors[0], "text_color": colors[1]})
 
     return response, 200
-
-
-if __name__ == "__main__":
-    app.debug = True
-    app.run(host="0.0.0.0", port=5000)
