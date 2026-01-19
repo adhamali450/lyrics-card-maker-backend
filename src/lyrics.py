@@ -1,14 +1,29 @@
 import re
 from bs4 import BeautifulSoup, Tag, NavigableString 
-
 import requests
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+
+
+username = os.getenv("PROXY_USERNAME")
+password = os.getenv("PROXY_PASSWORD")
+country = 'US'
+
+# Format the proxy URL
+proxy_url = f'http://{username}:{password}@pr.oxylabs.io:7777'
+
+# Set up proxies for requests
+proxies = {
+    'http': proxy_url,
+    'https': proxy_url
+}
 
 def get_lyrics_by_id(song_id: int) -> str:
     song_url = f"https://genius.com/songs/{song_id}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-    data = requests.get(song_url, headers=headers).text
+    data = requests.get(song_url, proxies=proxies).text
     
     soup = BeautifulSoup(data, "html.parser")
 
