@@ -16,8 +16,7 @@ app = Flask(__name__)
 CORS(app)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-genius = Genius(os.getenv("genius_key"), timeout=10)
-genius.remove_section_headers = True
+genius = Genius(access_token=os.getenv("genius_key"), timeout=10, verbose=True, remove_section_headers=True, retries=2)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -68,15 +67,22 @@ def search():
 
     return response
 
-
 @app.route("/api/song/lyrics/<song_id>", methods=["GET"])
 def get_lyrics(song_id):
-    if isinstance(song_id, int):
-        return jsonify("Please enter a valid song ID"), 400
+    # if not isinstance(song_id, int) or not isinstance(song_id, str):    
+    #     return jsonify("Please enter a valid song ID"), 400
 
-    response = jsonify(genius.lyrics(song_id))
-    return response, 200
-
+    try:
+        lyrics = genius.lyrics(song_url=f'https://genius.com/songs/{song_id}')
+    
+        if not lyrics:
+            return jsonify("Failed to get lyrics"), 400 
+            
+        response = jsonify(lyrics)
+        return response, 200
+    
+    except Exception as e:
+        return jsonify(str(e)), 400
 
 @app.route("/api/cors", methods=["GET"])
 def get_cors_image():
