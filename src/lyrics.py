@@ -8,8 +8,8 @@ load_dotenv()
 
 
 
-username = os.getenv("PROXY_USERNAME")
-password = os.getenv("PROXY_PASSWORD")
+username = os.getenv("proxy_username")
+password = os.getenv("proxy_password")
 country = 'US'
 
 # Format the proxy URL
