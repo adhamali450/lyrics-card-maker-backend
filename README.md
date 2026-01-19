@@ -1,7 +1,7 @@
 
 # Lyrics Card Maker (backend)
 
-A Flask backend application that fetches data required by the [frontend](https://github.com/adhamali450/lyrics-card-maker-frontend) to create a Genius lyrics card using the [lyricsgenius](https://pypi.org/project/lyricsgenius/) library.
+A Flask backend application responsible for satisfying the [frontend](https://github.com/adhamali450/lyrics-card-maker-frontend) to create a Genius lyrics card using the [lyricsgenius](https://pypi.org/project/lyricsgenius/) library.
 
 
 
@@ -16,6 +16,16 @@ To get started with this project, you can follow the steps below:
 
 ```
 Once you have completed these steps, you should have the project set up and ready to use on your local machine.
+
+### Configuration
+
+Before running the application, you need to obtain a Genius API Client Access Token:
+1. Visit [https://docs.genius.com/](https://docs.genius.com/) and create an API client to get your access token.
+2. Create a `.env` file in the root directory of the project.
+3. Add your token to the `.env` file:
+   ```env
+   genius_key=YOUR_ACCESS_TOKEN
+   ```
     
 ## API Reference
 
@@ -68,7 +78,7 @@ To illustrate how to consume the API from a JavaScript application, we will prov
 ```javascript
 import axios from "axios";
 
-const API_URL = "https://genius-unofficial-api.vercel.app/api";
+const API_URL = "http://localhost:5000/api";
 
 const res = axios
   .get(API_URL + `/search`, {
@@ -80,6 +90,9 @@ const res = axios
 });
 ```
 
+
+## Roadmap
+- **Remove `lyricsgenius` dependency**: Currently, the project relies on the [lyricsgenius](https://pypi.org/project/lyricsgenius/) library for searching songs and retrieving lyrics. In the future, I'm planning to have an in-house solution to interact with the Genius directly. I prefer to avoid third-party dependencies.
 
 ## Acknowledgements
 
